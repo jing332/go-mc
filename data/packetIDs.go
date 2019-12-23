@@ -10,20 +10,20 @@ const (
 	SpawnPlayer
 	AnimationClientbound
 	Statistics
-	AcknowledgePlayerDigging
 	BlockBreakAnimation
+
 	UpdateBlockEntity
 	BlockAction
 	BlockChange
 	BossBar
 	ServerDifficulty
+	TabComplete
 	ChatMessageClientbound
 
 	MultiBlockChange //0x10
-	TabComplete
-	DeclareCommands
 	ConfirmTransaction
 	CloseWindow
+	OpenWindow
 	WindowItems
 	WindowProperty
 	SetSlot
@@ -35,31 +35,26 @@ const (
 	Explosion
 	UnloadChunk
 	ChangeGameState
-
-	OpenHorseWindow //0x20
 	KeepAliveClientbound
-	ChunkData
+
+	ChunkData //0x20
 	Effect
 	Particle
-	UpdateLight
 	JoinGame
 	MapData
-	TradeList
+	Entity
 	EntityRelativeMove
 	EntityLookAndRelativeMove
 	EntityLook
-	Entity
 	VehicleMoveClientbound
-	OpenBook
-	OpenWindow
-
-	OpenSignEditor //0x30
+	OpenSignEditor
 	CraftRecipeResponse
 	PlayerAbilitiesClientbound
 	CombatEvent
-	PlayerInfo
-	FacePlayer
+	PlayerListItem
 	PlayerPositionAndLookClientbound
+
+	UseBed //0x30
 	UnlockRecipes
 	DestroyEntities
 	RemoveEntityEffect
@@ -69,16 +64,14 @@ const (
 	SelectAdvancementTab
 	WorldBorder
 	Camera
-
-	HeldItemChangeClientbound //0x40
-	UpdateViewPosition
-	UpdateViewDistance
+	HeldItemChangeClientbound
 	DisplayScoreboard
 	EntityMetadata
 	AttachEntity
 	EntityVelocity
 	EntityEquipment
-	SetExperience
+
+	SetExperience //0x40
 	UpdateHealth
 	ScoreboardObjective
 	SetPassengers
@@ -86,70 +79,50 @@ const (
 	UpdateScore
 	SpawnPosition
 	TimeUpdate
-
-	Title //0x50
-	EntitySoundEffect
+	Title
 	SoundEffect
-	StopSound
 	PlayerListHeaderAndFooter
-	NBTQueryResponse
 	CollectItem
 	EntityTeleport
 	Advancements
 	EntityProperties
 	EntityEffect
-	DeclareRecipes
-	Tags //0x5C
 )
 
 // Serverbound packet IDs
 const (
 	TeleportConfirm byte = iota //0x00
-	QueryBlockNBT
-	SetDifficulty
+	TabCompleteServerbound
 	ChatMessageServerbound
 	ClientStatus
 	ClientSettings
-	TabCompleteServerbound
 	ConfirmTransactionServerbound
-	ClickWindowButton
+	EnchantItem
 	ClickWindow
 	CloseWindowServerbound
 	PluginMessageServerbound
-	EditBook
-	QueryEntityNBT
 	UseEntity
 	KeepAliveServerbound
-
-	LockDifficulty //0x10
+	Player
 	PlayerPosition
 	PlayerPositionAndLookServerbound
 	PlayerLook
-	Player
-	VehicleMoveServerbound
+
+	VehicleMoveServerbound //0x10
 	SteerBoat
-	PickItem
 	CraftRecipeRequest
 	PlayerAbilitiesServerbound
 	PlayerDigging
 	EntityAction
 	SteerVehicle
-	RecipeBookData
-	NameItem
+	CraftingBookData
 	ResourcePackStatus
-
-	AdvancementTab //0x20
-	SelectTrade
-	SetBeaconEffect
+	AdvancementTab
 	HeldItemChangeServerbound
-	UpdateCommandBlock
-	UpdateCommandBlockMinecart
 	CreativeInventoryAction
-	UpdateJigsawBlock
-	UpdateStructureBlock
 	UpdateSign
 	AnimationServerbound
 	Spectate
 	PlayerBlockPlacement
-	UseItem //0x2D
+	UseItem
 )
