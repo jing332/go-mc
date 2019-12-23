@@ -10,7 +10,6 @@ import (
 	"github.com/Tnze/go-mc/data"
 	"github.com/Tnze/go-mc/nbt"
 	pk "github.com/Tnze/go-mc/net/packet"
-	"log"
 )
 
 // //GetPosition return the player's position
@@ -386,7 +385,6 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 		} `json:"modinfo"`
 	}
 
-	log.Println(p.Data)
 	var (
 		Channel pk.Identifier
 		Data    pk.PluginMessageData
@@ -406,7 +404,6 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 			Phase         pk.Byte
 		)
 		p.Scan(&Discriminator, &Phase)
-		log.Printf("Discriminator: %v, Phase: %v", Discriminator, Phase)
 		if Discriminator == -1 { //HandshakeAck Packet
 			if Phase == 2 {
 				c.PluginMessage("FML|HS",
@@ -446,7 +443,6 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 			var HasMore pk.Boolean = true
 			p.Scan(&Discriminator, &HasMore)
 			if !HasMore {
-				log.Println("HandshakeAck Packet: 3")
 				c.PluginMessage("FML|HS",
 					pk.MarshalNoId(
 						pk.Byte(-1),
@@ -490,7 +486,6 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 				modsData = append(modsData, pk.MarshalNoId(modName, modVersion).Data...)
 			}
 
-			log.Println("C-S: ModList")
 			//ModList Packet
 			c.PluginMessage("FML|HS",
 				pk.MarshalNoId(
