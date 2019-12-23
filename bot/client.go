@@ -9,6 +9,9 @@ import (
 
 // Client is used to access Minecraft server
 type Client struct {
+	Addr string
+	Port int
+
 	conn *net.Conn
 	Auth
 

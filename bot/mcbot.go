@@ -11,10 +11,11 @@ import (
 )
 
 // ProtocolVersion , the protocol version number of minecraft net protocol
-const ProtocolVersion = 573
+const ProtocolVersion = 340
 
 // JoinServer connect a Minecraft server for playing the game.
 func (c *Client) JoinServer(addr string, port int) (err error) {
+	c.Addr, c.Port = addr, port
 	//Connect
 	c.conn, err = net.DialMC(fmt.Sprintf("%s:%d", addr, port))
 	if err != nil {
@@ -26,9 +27,9 @@ func (c *Client) JoinServer(addr string, port int) (err error) {
 	err = c.conn.WritePacket(
 		//Handshake Packet
 		pk.Marshal(
-			0x00,                       //Handshake packet ID
-			pk.VarInt(ProtocolVersion), //Protocol version
-			pk.String(addr),            //Server's address
+			0x00,                          //Handshake packet ID
+			pk.VarInt(ProtocolVersion),    //Protocol version
+			pk.String(addr+"\000FML\000"), //Server's address
 			pk.UnsignedShort(port),
 			pk.Byte(2),
 		))

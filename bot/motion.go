@@ -89,7 +89,7 @@ func (c *Client) PluginMessage(channal string, msg []byte) error {
 	return c.conn.WritePacket(pk.Marshal(
 		data.PluginMessageServerbound,
 		pk.Identifier(channal),
-		pluginMessageData(msg),
+		pk.PluginMessageData(msg),
 	))
 }
 
@@ -137,12 +137,12 @@ func (c *Client) SelectItem(slot int) error {
 // If there still are no slots that meet that criteria, then the server will
 // use the currently selected slot. After finding the appropriate slot,
 // the server swaps the items and then change player's selected slot (cause the HeldItemChange event).
-func (c *Client) PickItem(slot int) error {
-	return c.conn.WritePacket(pk.Marshal(
-		data.PickItem,
-		pk.VarInt(slot),
-	))
-}
+//func (c *Client) PickItem(slot int) error {
+//	return c.conn.WritePacket(pk.Marshal(
+//		data.item,
+//		pk.VarInt(slot),
+//	))
+//}
 
 func (c *Client) playerAction(status, locX, locY, locZ, face int) error {
 	return c.conn.WritePacket(pk.Marshal(

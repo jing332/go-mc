@@ -3,6 +3,7 @@ package packet
 import (
 	"github.com/google/uuid"
 	"io"
+	"io/ioutil"
 	"math"
 
 	"github.com/Tnze/go-mc/nbt"
@@ -80,6 +81,10 @@ type (
 
 	//ByteArray is []byte with prefix VarInt as length
 	ByteArray []byte
+
+	// The PluginMessageData only used in recive PluginMessage packet.
+	// When decode it, read to end.
+	PluginMessageData []byte
 )
 
 //ReadNBytes read N bytes from bytes.Reader
@@ -384,4 +389,19 @@ func (u UUID) Encode() []byte {
 func (u *UUID) Decode(r DecodeReader) error {
 	_, err := io.ReadFull(r, (*u)[:])
 	return err
+}
+
+//Encode a PluginMessageData
+func (p PluginMessageData) Encode() []byte {
+	return []byte(p)
+}
+
+//Decode a PluginMessageData
+func (p *PluginMessageData) Decode(r DecodeReader) error {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	*p = data
+	return nil
 }

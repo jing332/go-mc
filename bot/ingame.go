@@ -2,15 +2,15 @@ package bot
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
-
 	"github.com/Tnze/go-mc/bot/world"
 	"github.com/Tnze/go-mc/bot/world/entity"
 	"github.com/Tnze/go-mc/chat"
 	"github.com/Tnze/go-mc/data"
 	"github.com/Tnze/go-mc/nbt"
 	pk "github.com/Tnze/go-mc/net/packet"
+	"log"
 )
 
 // //GetPosition return the player's position
@@ -60,7 +60,6 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 			return false, nil
 		}
 	}
-
 	switch p.ID {
 	case data.JoinGame:
 		err = handleJoinGamePacket(c, p)
@@ -91,12 +90,10 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	case data.HeldItemChangeClientbound:
 		err = handleHeldItemPacket(c, p)
 	case data.ChunkData:
-		err = handleChunkDataPacket(c, p)
+		//err = handleChunkDataPacket(c, p)
 	case data.PlayerPositionAndLookClientbound:
 		err = handlePlayerPositionAndLookPacket(c, p)
 		sendPlayerPositionAndLookPacket(c) // to confirm the position
-	case data.DeclareRecipes:
-		// handleDeclareRecipesPacket(g, reader)
 	case data.EntityLookAndRelativeMove:
 		// err = handleEntityLookAndRelativeMove(g, reader)
 	case data.EntityHeadLook:
@@ -116,9 +113,9 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	case data.ChatMessageClientbound:
 		err = handleChatMessagePacket(c, p)
 	case data.BlockChange:
-		////err = handleBlockChangePacket(c, p)
+	//err = handleBlockChangePacket(c, p)
 	case data.MultiBlockChange:
-		////err = handleMultiBlockChangePacket(c, p)
+	//err = handleMultiBlockChangePacket(c, p)
 	case data.DisconnectPlay:
 		err = handleDisconnectPacket(c, p)
 		disconnect = true
@@ -128,8 +125,9 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = handleSoundEffect(c, p)
 	case data.NamedSoundEffect:
 		err = handleNamedSoundEffect(c, p)
+
 	default:
-		// fmt.Printf("ignore pack id %X\n", p.ID)
+		//fmt.Printf("ignore pack id %X\n", p.ID)
 	}
 	return
 }
@@ -325,60 +323,183 @@ func handleUpdateHealthPacket(c *Client, p pk.Packet) (err error) {
 
 func handleJoinGamePacket(c *Client, p pk.Packet) error {
 	var (
-		eid          pk.Int
-		gamemode     pk.UnsignedByte
-		dimension    pk.Int
-		hashedSeed   pk.Long
-		maxPlayers   pk.UnsignedByte
-		levelType    pk.String
-		viewDistance pk.VarInt
-		rdi          pk.Boolean // Reduced Debug Info
-		ers          pk.Boolean // Enable respawn screen
+		eid        pk.Int
+		gamemode   pk.UnsignedByte
+		dimension  pk.Int
+		difficulty pk.UnsignedByte
+		//hashedSeed pk.Long
+		maxPlayers pk.UnsignedByte
+		levelType  pk.String
+		//viewDistance pk.VarInt
+		rdi pk.Boolean // Reduced Debug Info
+		//ers          pk.Boolean // Enable respawn screen
 	)
-	err := p.Scan(&eid, &gamemode, &dimension, &hashedSeed, &maxPlayers, &levelType, &rdi, &ers)
+	err := p.Scan(&eid, &gamemode, &dimension, &difficulty, &maxPlayers, &levelType, &rdi)
 	if err != nil {
 		return err
 	}
 
 	c.EntityID = int(eid)
 	c.Gamemode = int(gamemode & 0x7)
-	c.Hardcore = gamemode&0x8 != 0
 	c.Dimension = int(dimension)
+	c.Difficulty = int(difficulty)
 	c.LevelType = string(levelType)
-	c.ViewDistance = int(viewDistance)
 	c.ReducedDebugInfo = bool(rdi)
-	return nil
-}
-
-// The PluginMessageData only used in recive PluginMessage packet.
-// When decode it, read to end.
-type pluginMessageData []byte
-
-//Encode a PluginMessageData
-func (p pluginMessageData) Encode() []byte {
-	return []byte(p)
-}
-
-//Decode a PluginMessageData
-func (p *pluginMessageData) Decode(r pk.DecodeReader) error {
-	data, err := ioutil.ReadAll(r)
-	if err != nil {
-		return err
-	}
-	*p = data
 	return nil
 }
 
 func handlePluginPacket(c *Client, p pk.Packet) error {
 	var (
 		Channel pk.Identifier
-		Data    pluginMessageData
+		Data    pk.PluginMessageData
 	)
 	if err := p.Scan(&Channel, &Data); err != nil {
 		return err
 	}
+
+	c.handleForgeHandshake(p)
 	if c.Events.PluginMessage != nil {
 		return c.Events.PluginMessage(string(Channel), []byte(Data))
+	}
+	return nil
+}
+
+func (c *Client) handleForgeHandshake(p pk.Packet) error {
+	type status struct {
+		Description struct {
+			Text string `json:"text"`
+		} `json:"description"`
+		Players struct {
+			Max    int `json:"max"`
+			Online int `json:"online"`
+		} `json:"players"`
+		Version struct {
+			Name     string `json:"name"`
+			Protocol int    `json:"protocol"`
+		} `json:"version"`
+		Modinfo struct {
+			Type    string `json:"type"`
+			ModList []struct {
+				Modid   string `json:"modid"`
+				Version string `json:"version"`
+			} `json:"modList"`
+		} `json:"modinfo"`
+	}
+
+	log.Println(p.Data)
+	var (
+		Channel pk.Identifier
+		Data    pk.PluginMessageData
+	)
+	if err := p.Scan(&Channel); err != nil {
+		return err
+	}
+
+	if Channel == "FML|HS" {
+		if err := p.Scan(&Channel, &Data); err != nil {
+			return err
+		}
+
+		p.Data = Data
+		var (
+			Discriminator pk.Byte
+			Phase         pk.Byte
+		)
+		p.Scan(&Discriminator, &Phase)
+		log.Printf("Discriminator: %v, Phase: %v", Discriminator, Phase)
+		if Discriminator == -1 { //HandshakeAck Packet
+			if Phase == 2 {
+				c.PluginMessage("FML|HS",
+					pk.MarshalNoId(
+						pk.Byte(-1),
+						pk.Byte(4), //4: PENDINGCOMPLETE
+					).Data)
+				return nil
+			}
+
+			return nil
+		} else if Discriminator == 2 { //S->C: ModList Packet
+			type mod struct {
+				id      pk.String
+				version pk.String
+			}
+			var (
+				modInfo      []mod
+				numberOfMods pk.VarInt
+			)
+
+			r := bytes.NewReader(p.Data)
+			Discriminator.Decode(r)
+			numberOfMods.Decode(r)
+			modInfo = make([]mod, numberOfMods)
+			for i := 0; i < int(numberOfMods); i++ {
+				modInfo[i].id.Decode(r)
+				modInfo[i].version.Decode(r)
+			}
+
+			c.PluginMessage("FML|HS",
+				pk.MarshalNoId(
+					pk.Byte(-1),
+					pk.Byte(2), //2: WAITINGSERVERDATA
+				).Data)
+		} else if Discriminator == 3 { //S->C: RegistryData Packet
+			var HasMore pk.Boolean = true
+			p.Scan(&Discriminator, &HasMore)
+			if !HasMore {
+				log.Println("HandshakeAck Packet: 3")
+				c.PluginMessage("FML|HS",
+					pk.MarshalNoId(
+						pk.Byte(-1),
+						pk.Byte(3), //3: WAITINGSERVERCOMPLETE
+					).Data)
+			}
+
+		}
+
+		var (
+			FMLProtocolVersion pk.Byte
+			OverrideDimension  pk.Int
+		)
+		p.Scan(&Discriminator, &FMLProtocolVersion, &OverrideDimension)
+		if Discriminator == 0 && FMLProtocolVersion == 2 { //ServerHello Packet
+			resp, _, err := PingAndList(c.Addr, c.Port)
+			if err != nil {
+				return fmt.Errorf("ping and list server fail: %v", err)
+			}
+
+			var s status
+			err = json.Unmarshal(resp, &s)
+			if err != nil {
+				return fmt.Errorf("unmarshal resp fail: %v", err)
+			}
+
+			//REGISTER forge's plugin channels
+			c.PluginMessage("REGISTER", []byte("FML|HS\000FML\000FML|MP\000FML\000FORGE"))
+
+			//ClientHello packet
+			c.PluginMessage("FML|HS",
+				pk.MarshalNoId(
+					pk.Byte(1),
+					pk.Byte(2),
+				).Data,
+			)
+			var modsData pk.PluginMessageData
+			for _, v := range s.Modinfo.ModList {
+				modName := pk.String(v.Modid)
+				modVersion := pk.String(v.Version)
+				modsData = append(modsData, pk.MarshalNoId(modName, modVersion).Data...)
+			}
+
+			log.Println("C-S: ModList")
+			//ModList Packet
+			c.PluginMessage("FML|HS",
+				pk.MarshalNoId(
+					pk.Byte(2),
+					pk.VarInt(len(s.Modinfo.ModList)),
+					pk.PluginMessageData(modsData),
+				).Data,
+			)
+		}
 	}
 	return nil
 }

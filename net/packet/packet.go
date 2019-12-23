@@ -16,7 +16,15 @@ type Packet struct {
 //Marshal generate Packet with the ID and Fields
 func Marshal(ID byte, fields ...FieldEncoder) (pk Packet) {
 	pk.ID = ID
+	for _, v := range fields {
+		pk.Data = append(pk.Data, v.Encode()...)
+	}
 
+	return
+}
+
+//MarshalNoId generate Packet with the Fields
+func MarshalNoId(fields ...FieldEncoder) (pk Packet) {
 	for _, v := range fields {
 		pk.Data = append(pk.Data, v.Encode()...)
 	}
