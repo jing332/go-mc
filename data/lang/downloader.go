@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +17,7 @@ import (
 //go:generate go fmt ./...
 func main() {
 	// from {https://launchermeta.mojang.com/mc/game/version_manifest.json}.assetIndex.url
-	versionURL := "https://launchermeta.mojang.com/v1/packages/e8016c24200e6dd1b9001ec5204d4332bae24c38/1.15.json"
+	versionURL := "https://launchermeta.mojang.com/v1/packages/1584b57c1a0b5e593fad1f5b8f78536ca640547b/1.12.json"
 	log.Print("start generating lang packages")
 
 	resp, err := http.Get(versionURL)
@@ -56,11 +58,24 @@ func lang(name, hash string, size int64) {
 	defer resp.Body.Close()
 
 	// read language
-	var LangMap map[string]string
-	err = json.NewDecoder(resp.Body).Decode(&LangMap)
-	if err != nil {
-		log.Fatal("unmarshal json fail: ", err)
+	LangMap := make(map[string]string)
+
+	buf := bufio.NewReader(resp.Body)
+	for {
+		line, err := buf.ReadString('\n')
+		line = strings.TrimSpace(line)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			break
+		}
+		kv := strings.Split(line, "=")
+		if len(kv) == 2 {
+			LangMap[kv[0]] = kv[1]
+		}
 	}
+
 	trans(LangMap)
 
 	pName := strings.ReplaceAll(name, "_", "-")
