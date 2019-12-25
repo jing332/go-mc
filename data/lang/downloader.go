@@ -17,7 +17,7 @@ import (
 //go:generate go fmt ./...
 func main() {
 	// from {https://launchermeta.mojang.com/mc/game/version_manifest.json}.assetIndex.url
-	versionURL := "https://launchermeta.mojang.com/v1/packages/4fa7f939c7e9902e6c674ad1d00358f8c08d7b8e/1.11.json"
+	versionURL := "https://launchermeta.mojang.com/v1/packages/06cc9a2c5ce504dc712ea2f699e4d645c48416dd/1.9.json"
 	log.Print("start generating lang packages")
 
 	resp, err := http.Get(versionURL)

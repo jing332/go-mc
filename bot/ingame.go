@@ -158,7 +158,8 @@ func handleNamedSoundEffect(c *Client, p pk.Packet) error {
 		SoundName     pk.String
 		SoundCategory pk.VarInt
 		x, y, z       pk.Int
-		Volume, Pitch pk.Float
+		Volume        pk.Float
+		Pitch         pk.UnsignedByte
 	)
 	err := p.Scan(&SoundName, &SoundCategory, &x, &y, &z, &Volume, &Pitch)
 	if err != nil {

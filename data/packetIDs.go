@@ -11,7 +11,6 @@ const (
 	AnimationClientbound
 	Statistics
 	BlockBreakAnimation
-
 	UpdateBlockEntity
 	BlockAction
 	BlockChange
@@ -41,27 +40,24 @@ const (
 	Effect
 	Particle
 	JoinGame
-	MapData
-	Entity
+	Map
 	EntityRelativeMove
 	EntityLookAndRelativeMove
 	EntityLook
+	Entity
 	VehicleMoveClientbound
 	OpenSignEditor
-	CraftRecipeResponse
 	PlayerAbilitiesClientbound
 	CombatEvent
 	PlayerListItem
 	PlayerPositionAndLookClientbound
+	UseBed
 
-	UseBed //0x30
-	UnlockRecipes
-	DestroyEntities
+	DestroyEntities //0x30
 	RemoveEntityEffect
 	ResourcePackSend
 	Respawn
 	EntityHeadLook
-	SelectAdvancementTab
 	WorldBorder
 	Camera
 	HeldItemChangeClientbound
@@ -70,11 +66,11 @@ const (
 	AttachEntity
 	EntityVelocity
 	EntityEquipment
-
-	SetExperience //0x40
+	SetExperience
 	UpdateHealth
 	ScoreboardObjective
-	SetPassengers
+
+	SetPassengers //0x40
 	Teams
 	UpdateScore
 	SpawnPosition
@@ -84,7 +80,6 @@ const (
 	PlayerListHeaderAndFooter
 	CollectItem
 	EntityTeleport
-	Advancements
 	EntityProperties
 	EntityEffect
 )
@@ -103,21 +98,18 @@ const (
 	PluginMessageServerbound
 	UseEntity
 	KeepAliveServerbound
-	Player
 	PlayerPosition
 	PlayerPositionAndLookServerbound
 	PlayerLook
+	Player
 
 	VehicleMoveServerbound //0x10
 	SteerBoat
-	CraftRecipeRequest
 	PlayerAbilitiesServerbound
 	PlayerDigging
 	EntityAction
 	SteerVehicle
-	CraftingBookData
 	ResourcePackStatus
-	AdvancementTab
 	HeldItemChangeServerbound
 	CreativeInventoryAction
 	UpdateSign
