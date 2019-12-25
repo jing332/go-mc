@@ -674,7 +674,7 @@ func handlePlayerPositionAndLookPacket(c *Client, p pk.Packet) error {
 }
 
 func handleKeepAlivePacket(c *Client, p pk.Packet) error {
-	var KeepAliveID pk.Long
+	var KeepAliveID pk.VarInt
 	if err := p.Scan(&KeepAliveID); err != nil {
 		return err
 	}
