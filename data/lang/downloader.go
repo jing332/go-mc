@@ -16,8 +16,11 @@ import (
 //go:generate go run $GOFILE
 //go:generate go fmt ./...
 func main() {
+	lang("en_us", "", 1)
+	return
+
 	// from {https://launchermeta.mojang.com/mc/game/version_manifest.json}.assetIndex.url
-	versionURL := "https://launchermeta.mojang.com/v1/packages/06cc9a2c5ce504dc712ea2f699e4d645c48416dd/1.9.json"
+	versionURL := "https://launchermeta.mojang.com/v1/packages/f6ad102bcaa53b1a58358f16e376d548d44933ec/1.8.json"
 	log.Print("start generating lang packages")
 
 	resp, err := http.Get(versionURL)
@@ -41,7 +44,7 @@ func main() {
 	for i, v := range list.Objects {
 		if strings.HasPrefix(i, "minecraft/lang/") {
 			name := i[len("minecraft/lang/") : len(i)-len(".json")]
-			lang(name, v.Hash, v.Size)
+			lang(strings.ToLower(name), v.Hash, v.Size)
 		}
 	}
 }
@@ -50,17 +53,19 @@ func lang(name, hash string, size int64) {
 	log.Print("generating ", name, " package")
 
 	//download language
-	LangURL := "http://resources.download.minecraft.net/" + hash[:2] + "/" + hash
-	resp, err := http.Get(LangURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
+	//LangURL := "http://resources.download.minecraft.net/" + hash[:2] + "/" + hash
+	//resp, err := http.Get(LangURL)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//defer resp.Body.Close()
+
+	f2, err := os.OpenFile("C:/Users/jing/Desktop/en_US.lang", os.O_RDWR|os.O_CREATE, 0755)
 
 	// read language
 	LangMap := make(map[string]string)
 
-	buf := bufio.NewReader(resp.Body)
+	buf := bufio.NewReader(f2)
 	for {
 		line, err := buf.ReadString('\n')
 		line = strings.TrimSpace(line)
