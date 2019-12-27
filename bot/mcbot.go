@@ -11,7 +11,7 @@ import (
 )
 
 // ProtocolVersion , the protocol version number of minecraft net protocol
-const ProtocolVersion = 110
+const ProtocolVersion = 47
 
 // JoinServer connect a Minecraft server for playing the game.
 func (c *Client) JoinServer(addr string, port int) (err error) {
@@ -22,7 +22,6 @@ func (c *Client) JoinServer(addr string, port int) (err error) {
 		err = fmt.Errorf("bot: connect server fail: %v", err)
 		return
 	}
-
 	//Handshake
 	err = c.conn.WritePacket(
 		//Handshake Packet
@@ -55,7 +54,6 @@ func (c *Client) JoinServer(addr string, port int) (err error) {
 			err = fmt.Errorf("bot: recv packet for Login fail: %v", err)
 			return
 		}
-
 		//Handle Packet
 		switch pack.ID {
 		case 0x00: //Disconnect

@@ -13,7 +13,7 @@ type eventBroker struct {
 	Disconnect     func(reason chat.Message) error
 	HealthChange   func() error
 	Die            func() error
-	SoundPlay      func(name string, category int, x, y, z float64, volume, pitch float32) error
+	SoundPlay      func(name string, x, y, z float64, volume, pitch float32) error
 	PluginMessage  func(channel string, data []byte) error
 	HeldItemChange func(slot int) error
 

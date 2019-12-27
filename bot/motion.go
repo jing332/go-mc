@@ -29,12 +29,12 @@ func (c *Client) Respawn() error {
 
 // UseItem use the item player handing.
 // hand could be one of 0: main hand, 1: off hand
-func (c *Client) UseItem(hand int) error {
-	return c.conn.WritePacket(pk.Marshal(
-		data.UseItem,
-		pk.VarInt(hand),
-	))
-}
+//func (c *Client) UseItem(hand int) error {
+//	return c.conn.WritePacket(pk.Marshal(
+//		data.UseItem,
+//		pk.VarInt(hand),
+//	))
+//}
 
 // UseEntity used by player to right-clicks another entity.
 // hand could be one of 0: main hand, 1: off hand.
@@ -184,7 +184,7 @@ func (c *Client) SwapItem() error {
 // Server will close the connection after receive this packet.
 func (c *Client) Disconnect(reason chat.Message) error {
 	return c.conn.WritePacket(pk.Marshal(
-		data.DisconnectPlay,
+		data.Disconnect,
 		reason,
 	))
 }

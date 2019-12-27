@@ -10,6 +10,7 @@ import (
 	"github.com/Tnze/go-mc/data"
 	"github.com/Tnze/go-mc/nbt"
 	pk "github.com/Tnze/go-mc/net/packet"
+	"log"
 )
 
 // //GetPosition return the player's position
@@ -59,6 +60,7 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 			return false, nil
 		}
 	}
+
 	switch p.ID {
 	case data.JoinGame:
 		err = handleJoinGamePacket(c, p)
@@ -80,10 +82,9 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 				data.ClientSettings,
 				pk.String(c.settings.Locale),
 				pk.Byte(c.settings.ViewDistance),
-				pk.VarInt(c.settings.ChatMode),
+				pk.Byte(c.settings.ChatMode),
 				pk.Boolean(c.settings.ChatColors),
 				pk.UnsignedByte(c.settings.DisplayedSkinParts),
-				pk.VarInt(c.settings.MainHand),
 			),
 		)
 	case data.HeldItemChangeClientbound:
@@ -115,15 +116,13 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	//err = handleBlockChangePacket(c, p)
 	case data.MultiBlockChange:
 	//err = handleMultiBlockChangePacket(c, p)
-	case data.DisconnectPlay:
+	case data.Disconnect:
 		err = handleDisconnectPacket(c, p)
 		disconnect = true
 	case data.SetSlot:
-		err = handleSetSlotPacket(c, p)
+		//err = handleSetSlotPacket(c, p)
 	case data.SoundEffect:
 		err = handleSoundEffect(c, p)
-	case data.NamedSoundEffect:
-		err = handleNamedSoundEffect(c, p)
 
 	default:
 		//fmt.Printf("ignore pack id %X\n", p.ID)
@@ -133,44 +132,19 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 
 func handleSoundEffect(c *Client, p pk.Packet) error {
 	var (
-		SoundID       pk.VarInt
-		SoundCategory pk.VarInt
-		x, y, z       pk.Int
-		Volume, Pitch pk.Float
+		SoundName pk.String
+		x, y, z   pk.Int
+		Volume    pk.Float
+		Pitch     pk.UnsignedByte
 	)
-	err := p.Scan(&SoundID, &SoundCategory, &x, &y, &z, &Volume, &Pitch)
+	err := p.Scan(&SoundName, &x, &y, &z, &Volume, &Pitch)
 	if err != nil {
 		return err
 	}
 
 	if c.Events.SoundPlay != nil {
 		err = c.Events.SoundPlay(
-			data.SoundNames[SoundID], int(SoundCategory),
-			float64(x)/8, float64(y)/8, float64(z)/8,
-			float32(Volume), float32(Pitch))
-	}
-
-	return nil
-}
-
-func handleNamedSoundEffect(c *Client, p pk.Packet) error {
-	var (
-		SoundName     pk.String
-		SoundCategory pk.VarInt
-		x, y, z       pk.Int
-		Volume        pk.Float
-		Pitch         pk.UnsignedByte
-	)
-	err := p.Scan(&SoundName, &SoundCategory, &x, &y, &z, &Volume, &Pitch)
-	if err != nil {
-		return err
-	}
-
-	if c.Events.SoundPlay != nil {
-		err = c.Events.SoundPlay(
-			string(SoundName), int(SoundCategory),
-			float64(x)/8, float64(y)/8, float64(z)/8,
-			float32(Volume), float32(Pitch))
+			string(SoundName), float64(x)/8, float64(y)/8, float64(z)/8, float32(Volume), float32(Pitch))
 	}
 
 	return nil
@@ -325,14 +299,11 @@ func handleJoinGamePacket(c *Client, p pk.Packet) error {
 	var (
 		eid        pk.Int
 		gamemode   pk.UnsignedByte
-		dimension  pk.Int
+		dimension  pk.Byte
 		difficulty pk.UnsignedByte
-		//hashedSeed pk.Long
 		maxPlayers pk.UnsignedByte
 		levelType  pk.String
-		//viewDistance pk.VarInt
-		rdi pk.Boolean // Reduced Debug Info
-		//ers          pk.Boolean // Enable respawn screen
+		rdi        pk.Boolean // Reduced Debug Info
 	)
 	err := p.Scan(&eid, &gamemode, &dimension, &difficulty, &maxPlayers, &levelType, &rdi)
 	if err != nil {
@@ -357,7 +328,10 @@ func handlePluginPacket(c *Client, p pk.Packet) error {
 		return err
 	}
 
-	c.handleForgeHandshake(p)
+	if err := c.handleForgeHandshake(p); err != nil {
+		return err
+	}
+
 	if c.Events.PluginMessage != nil {
 		return c.Events.PluginMessage(string(Channel), []byte(Data))
 	}
@@ -366,10 +340,8 @@ func handlePluginPacket(c *Client, p pk.Packet) error {
 
 func (c *Client) handleForgeHandshake(p pk.Packet) error {
 	type status struct {
-		Description struct {
-			Text string `json:"text"`
-		} `json:"description"`
-		Players struct {
+		Description string `json:"description"`
+		Players     struct {
 			Max    int `json:"max"`
 			Online int `json:"online"`
 		} `json:"players"`
@@ -405,6 +377,7 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 			Phase         pk.Byte
 		)
 		p.Scan(&Discriminator, &Phase)
+
 		if Discriminator == -1 { //HandshakeAck Packet
 			if Phase == 2 {
 				c.PluginMessage("FML|HS",
@@ -467,6 +440,7 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 			var s status
 			err = json.Unmarshal(resp, &s)
 			if err != nil {
+				log.Println(err)
 				return fmt.Errorf("unmarshal resp fail: %v", err)
 			}
 
@@ -633,10 +607,9 @@ func handlePlayerPositionAndLookPacket(c *Client, p pk.Packet) error {
 		x, y, z    pk.Double
 		yaw, pitch pk.Float
 		flags      pk.Byte
-		TeleportID pk.VarInt
 	)
 
-	err := p.Scan(&x, &y, &z, &yaw, &pitch, &flags, &TeleportID)
+	err := p.Scan(&x, &y, &z, &yaw, &pitch, &flags)
 	if err != nil {
 		return err
 	}
@@ -668,10 +641,11 @@ func handlePlayerPositionAndLookPacket(c *Client, p pk.Packet) error {
 	}
 
 	//Confirm
-	return c.conn.WritePacket(pk.Marshal(
-		data.TeleportConfirm,
-		pk.VarInt(TeleportID),
-	))
+	//return c.conn.WritePacket(pk.Marshal(
+	//	data.PlayerPositionAndLookServerbound,
+	//	x, y, z, yaw, pitch, pk.Boolean(true)))
+	return nil
+
 }
 
 func handleKeepAlivePacket(c *Client, p pk.Packet) error {

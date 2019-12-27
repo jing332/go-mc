@@ -2,119 +2,113 @@ package data
 
 // Clientbound packet IDs
 const (
-	SpawnObject byte = iota //0x00
-	SpawnExperienceOrb
-	SpawnGlobalEntity
-	SpawnMob
-	SpawnPainting
-	SpawnPlayer
-	AnimationClientbound
-	Statistics
-	BlockBreakAnimation
-	UpdateBlockEntity
-	BlockAction
-	BlockChange
-	BossBar
-	ServerDifficulty
-	TabComplete
-	ChatMessageClientbound
-
-	MultiBlockChange //0x10
-	ConfirmTransaction
-	CloseWindow
-	OpenWindow
-	WindowItems
-	WindowProperty
-	SetSlot
-	SetCooldown
-	PluginMessageClientbound
-	NamedSoundEffect
-	DisconnectPlay
-	EntityStatus
-	Explosion
-	UnloadChunk
-	ChangeGameState
-	KeepAliveClientbound
-
-	ChunkData //0x20
-	Effect
-	Particle
+	KeepAliveClientbound byte = iota //0x00
 	JoinGame
-	Map
-	EntityRelativeMove
-	EntityLookAndRelativeMove
-	EntityLook
-	Entity
-	VehicleMoveClientbound
-	OpenSignEditor
-	PlayerAbilitiesClientbound
-	CombatEvent
-	PlayerListItem
-	PlayerPositionAndLookClientbound
-	UseBed
-
-	DestroyEntities //0x30
-	RemoveEntityEffect
-	ResourcePackSend
-	Respawn
-	EntityHeadLook
-	WorldBorder
-	Camera
-	HeldItemChangeClientbound
-	DisplayScoreboard
-	EntityMetadata
-	AttachEntity
-	EntityVelocity
-	EntityEquipment
-	SetExperience
-	UpdateHealth
-	ScoreboardObjective
-
-	SetPassengers //0x40
-	Teams
-	UpdateScore
-	SpawnPosition
+	ChatMessageClientbound
 	TimeUpdate
-	Title
-	SoundEffect
-	PlayerListHeaderAndFooter
+	EntityEquipment
+	SpawnPosition
+	UpdateHealth
+	Respawn
+	PlayerPositionAndLookClientbound
+	HeldItemChangeClientbound
+	UseBed
+	Animation
+	SpawnPlayer
 	CollectItem
+	SpawnObject
+	SpawnMob
+
+	SpawnPainting //0x10
+	SpanExperienceOrb
+	EntityVelocity
+	DestroyEntities
+	Entity
+	EntityRelativeMove
+	EntityLook
+	EntityLookAndRelativeMove
 	EntityTeleport
-	EntityProperties
+	EntityHeadLook
+	EntityStatus
+	AttachEntity
+	EntityMetadata
 	EntityEffect
+	RemoveEntityEffect
+	SetExperience
+
+	EntityProperties //0x20
+	ChunkData
+	MultiBlockChange
+	BlockChange
+	BlockAction
+	BlockBreakAnimation
+	MapChunkBulk
+	Explosion
+	Effect
+	SoundEffect
+	Particle
+	ChangeGameState
+	SpawnGlobalEntity
+	OpenWindow
+	CloseWindowClientbound
+	SetSlot
+
+	WindowItems //0x30
+	WindowProperty
+	ConfirmTransaction
+	UpdateSignClientbound
+	Map
+	UpdateBlockEntity
+	OpenSignEditor
+	Statistics
+	PlayerListItem
+	PlayerAbilitiesClientbound
+	TabComplete
+	ScoreboardObjective
+	UpdateScore
+	DisplayScoreboard
+	Teams
+	PluginMessageClientbound
+	Disconnect
+	ServerDifficulty
+
+	CombatEvent //0x40
+	Camera
+	WorldBorder
+	Title
+	SetCompression
+	PlayerListHeaderAndFooter
+	ResourcePackSend
+	UpdateEntityNBT
 )
 
 // Serverbound packet IDs
 const (
-	TeleportConfirm byte = iota //0x00
-	TabCompleteServerbound
+	KeepAliveServerbound byte = iota //0x00
 	ChatMessageServerbound
-	ClientStatus
-	ClientSettings
-	ConfirmTransactionServerbound
-	EnchantItem
-	ClickWindow
-	CloseWindowServerbound
-	PluginMessageServerbound
 	UseEntity
-	KeepAliveServerbound
-	PlayerPosition
-	PlayerPositionAndLookServerbound
-	PlayerLook
 	Player
-
-	VehicleMoveServerbound //0x10
-	SteerBoat
-	PlayerAbilitiesServerbound
+	PlayerPosition
+	PlayerLook
+	PlayerPositionAndLookServerbound
 	PlayerDigging
+	PlayerBlockPlacement
+	HeldItemChangeServerbound
+	AnimationServerbound
 	EntityAction
 	SteerVehicle
-	ResourcePackStatus
-	HeldItemChangeServerbound
-	CreativeInventoryAction
-	UpdateSign
-	AnimationServerbound
+	CloseWindowServerbound
+	ClickWindow
+	ConfirmTransactionServerbound
+
+	CreativeInventoryAction //0x10
+	EnchantItem
+	UpdateSignServerbound
+	PlayerAbilitiesServerbound
+	TabCompleteServerbound
+	ClientSettings
+	ClientStatus
+	PluginMessageServerbound
 	Spectate
-	PlayerBlockPlacement
-	UseItem
+	ResourcePackStatus
 )

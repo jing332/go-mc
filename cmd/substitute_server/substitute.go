@@ -164,6 +164,7 @@ func Handle(conn net.Conn) {
 			//将包发送到客户端
 			if err := c.WritePacket(p); err != nil {
 				fmt.Println(err)
+				c.Close()
 				return
 			}
 		}
@@ -173,10 +174,8 @@ func Handle(conn net.Conn) {
 
 func (c *Client) handleForgeHandshake(p pk.Packet) error {
 	type status struct {
-		Description struct {
-			Text string `json:"text"`
-		} `json:"description"`
-		Players struct {
+		Description string `json:"description"`
+		Players     struct {
 			Max    int `json:"max"`
 			Online int `json:"online"`
 		} `json:"players"`
