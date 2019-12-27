@@ -16,11 +16,8 @@ import (
 //go:generate go run $GOFILE
 //go:generate go fmt ./...
 func main() {
-	lang("en_us", "", 1)
-	return
-
 	// from {https://launchermeta.mojang.com/mc/game/version_manifest.json}.assetIndex.url
-	versionURL := "https://launchermeta.mojang.com/v1/packages/f6ad102bcaa53b1a58358f16e376d548d44933ec/1.8.json"
+	versionURL := "https://launchermeta.mojang.com/v1/packages/1863782e33ce7b584fc45b037325a1964e095d3e/1.7.10.json"
 	log.Print("start generating lang packages")
 
 	resp, err := http.Get(versionURL)
@@ -53,19 +50,19 @@ func lang(name, hash string, size int64) {
 	log.Print("generating ", name, " package")
 
 	//download language
-	//LangURL := "http://resources.download.minecraft.net/" + hash[:2] + "/" + hash
-	//resp, err := http.Get(LangURL)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//defer resp.Body.Close()
+	LangURL := "http://resources.download.minecraft.net/" + hash[:2] + "/" + hash
+	resp, err := http.Get(LangURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
 
-	f2, err := os.OpenFile("C:/Users/jing/Desktop/en_US.lang", os.O_RDWR|os.O_CREATE, 0755)
+	//f2, err := os.OpenFile("C:/Users/jing/Desktop/en_US.lang", os.O_RDWR|os.O_CREATE, 0755)
 
 	// read language
 	LangMap := make(map[string]string)
 
-	buf := bufio.NewReader(f2)
+	buf := bufio.NewReader(resp.Body)
 	for {
 		line, err := buf.ReadString('\n')
 		line = strings.TrimSpace(line)
