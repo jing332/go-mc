@@ -10,7 +10,6 @@ import (
 	"github.com/Tnze/go-mc/data"
 	"github.com/Tnze/go-mc/nbt"
 	pk "github.com/Tnze/go-mc/net/packet"
-	"log"
 )
 
 // //GetPosition return the player's position
@@ -70,8 +69,6 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		}
 	case data.PluginMessageClientbound:
 		err = handlePluginPacket(c, p)
-	case data.ServerDifficulty:
-		err = handleServerDifficultyPacket(c, p)
 	case data.SpawnPosition:
 		err = handleSpawnPositionPacket(c, p)
 	case data.PlayerAbilitiesClientbound:
@@ -84,7 +81,8 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 				pk.Byte(c.settings.ViewDistance),
 				pk.Byte(c.settings.ChatMode),
 				pk.Boolean(c.settings.ChatColors),
-				pk.UnsignedByte(c.settings.DisplayedSkinParts),
+				pk.Byte(0),
+				pk.Boolean(false),
 			),
 		)
 	case data.HeldItemChangeClientbound:
@@ -245,17 +243,16 @@ func handleSetSlotPacket(c *Client, p pk.Packet) error {
 
 func handleChatMessagePacket(c *Client, p pk.Packet) (err error) {
 	var (
-		s   chat.Message
-		pos pk.Byte
+		s chat.Message
 	)
 
-	err = p.Scan(&s, &pos)
+	err = p.Scan(&s)
 	if err != nil {
 		return err
 	}
 
 	if c.Events.ChatMsg != nil {
-		err = c.Events.ChatMsg(s, byte(pos))
+		err = c.Events.ChatMsg(s)
 	}
 
 	return err
@@ -303,9 +300,8 @@ func handleJoinGamePacket(c *Client, p pk.Packet) error {
 		difficulty pk.UnsignedByte
 		maxPlayers pk.UnsignedByte
 		levelType  pk.String
-		rdi        pk.Boolean // Reduced Debug Info
 	)
-	err := p.Scan(&eid, &gamemode, &dimension, &difficulty, &maxPlayers, &levelType, &rdi)
+	err := p.Scan(&eid, &gamemode, &dimension, &difficulty, &maxPlayers, &levelType)
 	if err != nil {
 		return err
 	}
@@ -315,7 +311,6 @@ func handleJoinGamePacket(c *Client, p pk.Packet) error {
 	c.Dimension = int(dimension)
 	c.Difficulty = int(difficulty)
 	c.LevelType = string(levelType)
-	c.ReducedDebugInfo = bool(rdi)
 	return nil
 }
 
@@ -360,17 +355,16 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 
 	var (
 		Channel pk.Identifier
+		Length  pk.Short
 		Data    pk.PluginMessageData
 	)
 	if err := p.Scan(&Channel); err != nil {
 		return err
 	}
-
 	if Channel == "FML|HS" {
-		if err := p.Scan(&Channel, &Data); err != nil {
+		if err := p.Scan(&Channel, &Length, &Data); err != nil {
 			return err
 		}
-
 		p.Data = Data
 		var (
 			Discriminator pk.Byte
@@ -440,7 +434,6 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 			var s status
 			err = json.Unmarshal(resp, &s)
 			if err != nil {
-				log.Println(err)
 				return fmt.Errorf("unmarshal resp fail: %v", err)
 			}
 
@@ -471,16 +464,6 @@ func (c *Client) handleForgeHandshake(p pk.Packet) error {
 			)
 		}
 	}
-	return nil
-}
-
-func handleServerDifficultyPacket(c *Client, p pk.Packet) error {
-	var difficulty pk.Byte
-	err := p.Scan(&difficulty)
-	if err != nil {
-		return err
-	}
-	c.Difficulty = int(difficulty)
 	return nil
 }
 
@@ -606,39 +589,46 @@ func handlePlayerPositionAndLookPacket(c *Client, p pk.Packet) error {
 	var (
 		x, y, z    pk.Double
 		yaw, pitch pk.Float
-		flags      pk.Byte
+		onGround   pk.Boolean
 	)
 
-	err := p.Scan(&x, &y, &z, &yaw, &pitch, &flags)
+	err := p.Scan(&x, &y, &z, &yaw, &pitch, &onGround)
 	if err != nil {
 		return err
 	}
 
-	if flags&0x01 == 0 {
-		c.X = float64(x)
-	} else {
-		c.X += float64(x)
-	}
-	if flags&0x02 == 0 {
-		c.Y = float64(y)
-	} else {
-		c.Y += float64(y)
-	}
-	if flags&0x04 == 0 {
-		c.Z = float64(z)
-	} else {
-		c.Z += float64(z)
-	}
-	if flags&0x08 == 0 {
-		c.Yaw = float32(yaw)
-	} else {
-		c.Yaw += float32(yaw)
-	}
-	if flags&0x10 == 0 {
-		c.Pitch = float32(pitch)
-	} else {
-		c.Pitch += float32(pitch)
-	}
+	c.X = float64(x)
+	c.Y = float64(y)
+	c.Z = float64(z)
+	c.Yaw = float32(yaw)
+	c.Pitch = float32(pitch)
+	c.OnGround = bool(onGround)
+
+	//if flags&0x01 == 0 {
+	//	c.X = float64(x)
+	//} else {
+	//	c.X += float64(x)
+	//}
+	//if flags&0x02 == 0 {
+	//	c.Y = float64(y)
+	//} else {
+	//	c.Y += float64(y)
+	//}
+	//if flags&0x04 == 0 {
+	//	c.Z = float64(z)
+	//} else {
+	//	c.Z += float64(z)
+	//}
+	//if flags&0x08 == 0 {
+	//	c.Yaw = float32(yaw)
+	//} else {
+	//	c.Yaw += float32(yaw)
+	//}
+	//if flags&0x10 == 0 {
+	//	c.Pitch = float32(pitch)
+	//} else {
+	//	c.Pitch += float32(pitch)
+	//}
 
 	//Confirm
 	//return c.conn.WritePacket(pk.Marshal(
@@ -649,7 +639,7 @@ func handlePlayerPositionAndLookPacket(c *Client, p pk.Packet) error {
 }
 
 func handleKeepAlivePacket(c *Client, p pk.Packet) error {
-	var KeepAliveID pk.VarInt
+	var KeepAliveID pk.Int
 	if err := p.Scan(&KeepAliveID); err != nil {
 		return err
 	}
@@ -689,10 +679,13 @@ func handleWindowItemsPacket(c *Client, p pk.Packet) (err error) {
 }
 
 func sendPlayerPositionAndLookPacket(c *Client) {
+	var headPos = float32(int64(c.Y) + 1)
+
 	c.conn.WritePacket(pk.Marshal(
 		data.PlayerPositionAndLookServerbound,
 		pk.Double(c.X),
-		pk.Double(c.Y),
+		pk.Double(headPos-1.62),
+		pk.Double(headPos),
 		pk.Double(c.Z),
 		pk.Float(c.Yaw),
 		pk.Float(c.Pitch),

@@ -89,6 +89,7 @@ func (c *Client) PluginMessage(channal string, msg []byte) error {
 	return c.conn.WritePacket(pk.Marshal(
 		data.PluginMessageServerbound,
 		pk.Identifier(channal),
+		pk.Short(len(msg)),
 		pk.PluginMessageData(msg),
 	))
 }

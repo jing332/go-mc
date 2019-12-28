@@ -57,9 +57,9 @@ const (
 	WindowProperty
 	ConfirmTransaction
 	UpdateSignClientbound
-	Map
+	Maps
 	UpdateBlockEntity
-	OpenSignEditor
+	SignEditorOpen
 	Statistics
 	PlayerListItem
 	PlayerAbilitiesClientbound
@@ -70,16 +70,6 @@ const (
 	Teams
 	PluginMessageClientbound
 	Disconnect
-	ServerDifficulty
-
-	CombatEvent //0x40
-	Camera
-	WorldBorder
-	Title
-	SetCompression
-	PlayerListHeaderAndFooter
-	ResourcePackSend
-	UpdateEntityNBT
 )
 
 // Serverbound packet IDs
@@ -109,6 +99,4 @@ const (
 	ClientSettings
 	ClientStatus
 	PluginMessageServerbound
-	Spectate
-	ResourcePackStatus
 )
