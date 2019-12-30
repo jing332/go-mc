@@ -1,3 +1,5 @@
+## Gitee: https://gitee.com/jing18233/go-mc
+
 # Go-MC
 ![Version](https://img.shields.io/badge/Minecraft-1.15-blue.svg)
 ![Protocol](https://img.shields.io/badge/Protocol-573-blue.svg)
